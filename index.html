@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Projeto Desafio - Make More</title>
+<style>
+:root{
+  --blue:#3a6ee8; --bg:#f5f7fb; --card:#fff; --muted:#6b7280; --soft:#eef3ff; --accent:#345ccc;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Segoe UI",Roboto,Arial;background:var(--bg);color:#222}
+.app{max-width:1100px;margin:28px auto;padding:18px}
+.header{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px}
+.header h1{margin:0;color:var(--blue);font-size:20px}
+.header .meta{color:var(--muted);font-size:13px}
+.nav{display:flex;gap:8px}
+.tab{background:transparent;border:1px solid transparent;padding:8px 12px;border-radius:8px;cursor:pointer;color:var(--blue);font-weight:600}
+.tab.active{background:var(--soft);border-color:var(--soft);color:#06286b}
+.container{background:transparent}
+.grid{display:grid;grid-template-columns:1fr;gap:18px}
+.card{background:var(--card);border-radius:12px;padding:16px;box-shadow:0 6px 18px rgba(30,40,80,0.06)}
+h2{margin:0 0 8px 0;color:var(--blue);font-size:15px}
+.label{display:block;font-size:13px;color:#52607a;margin:8px 0 6px}
+.input, textarea, select{width:100%;padding:10px;border-radius:8px;border:1px solid #e3e7f8;background:#fbfdff;font-size:14px}
+textarea{min-height:70px;resize:vertical}
+.row{display:flex;gap:10px}
+.col{flex:1}
+.btn{background:var(--blue);color:#fff;padding:9px 12px;border-radius:8px;border:0;cursor:pointer;font-weight:700}
+.btn.ghost{background:transparent;border:1px solid #e6ecff;color:var(--blue)}
+.small{padding:6px 8px;font-size:13px;border-radius:8px}
+.table{width:100%;border-collapse:collapse;margin-top:12px}
+.table th,.table td{padding:8px;text-align:left;border-bottom:1px solid #f1f4fb;font-size:13px}
+.table th{background:#f0f6ff;color:var(--blue);font-weight:700}
+.pill{display:inline-block;padding:7px 10px;border-radius:10px;background:var(--soft);font-weight:600;color:var(--blue)}
+.muted{color:var(--muted);font-size:13px}
+.delivery-row{display:flex;justify-content:space-between;align-items:center;padding:8px;border-radius:8px;background:#fbfdff;margin:6px 0}
+.ok{background:#28a745;color:#fff;border:0;padding:6px 8px;border-radius:6px;cursor:pointer}
+.ok[disabled]{opacity:0.5;cursor:default}
+.footer{margin-top:22px;color:#9aa3bf;font-size:13px;text-align:center}
+
+/* responsive */
+@media(max-width:900px){ .row{flex-direction:column} }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <h1>💼 Projeto Desafio - Make More</h1>
+    <div class="meta">minimal • salva localmente</div>
+  </div>
+
+  <div class="nav" role="tablist" aria-label="abas">
+    <button class="tab active" data-tab="pedidos">Pedidos</button>
+    <button class="tab" data-tab="registrar">Registrar Venda</button>
+    <button class="tab" data-tab="estoque">Estoque</button>
+  </div>
+
+  <div class="container">
+    <!-- PEDIDOS -->
+    <div id="pedidos" class="card view">
+      <h2>🔎 Buscar Pedido</h2>
+      <label class="label">Código do pedido</label>
+      <div class="row">
+        <input id="search_code" class="input col" placeholder="ex: 122445" />
+        <button class="btn small" onclick="uiLoadOrder()">Buscar</button>
+        <button class="btn ghost small" onclick="uiClearSearch()">Limpar</button>
+      </div>
+
+      <div id="order_panel" style="margin-top:12px"></div>
+
+      <hr style="margin:12px 0;border:none;border-top:1px solid #f1f4fb">
+
+      <h2 style="margin-top:8px">📜 Histórico de Pedidos</h2>
+      <table class="table" id="orders_table">
+        <thead><tr><th>Pedido</th><th>Produto</th><th>Qtd</th><th>Imediata</th><th>Pendentes</th><th>Ações</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <!-- REGISTRAR -->
+    <div id="registrar" class="card view" style="display:none">
+      <h2>🛒 Registrar Venda</h2>
+
+      <label class="label">Código do pedido</label>
+      <input id="r_code" class="input" placeholder="ex: 122445" />
+
+      <div class="row">
+        <div class="col">
+          <label class="label">ID do produto</label>
+          <input id="r_prod" type="number" class="input" placeholder="ex: 123" />
+        </div>
+        <div class="col">
+          <label class="label">Qtd solicitada</label>
+          <input id="r_qty" type="number" class="input" placeholder="ex: 5000" />
+        </div>
+      </div>
+
+      <label class="label">Data do pedido (dd/mm/aaaa)</label>
+      <input id="r_date" class="input" placeholder="ex: 07/10/2025" />
+
+      <div style="margin-top:10px" class="row">
+        <button class="btn" onclick="uiRegister()">Registrar Pedido</button>
+        <button class="btn ghost" onclick="uiFillExample()">Preencher Exemplo</button>
+      </div>
+
+      <div style="margin-top:12px" class="muted">Ao registrar, o sistema usa o estoque atual para calcular entrega imediata; resto vira entregas futuras semanais (parcela de até 1000).</div>
+
+      <hr style="margin:14px 0;border:none;border-top:1px solid #f1f4fb">
+
+      <h2 style="margin-top:8px">📦 Histórico de Registro</h2>
+      <table class="table" id="registrar_table">
+        <thead><tr><th>Pedido</th><th>Produto</th><th>Qtd</th><th>Imediata</th><th>Pendentes</th><th>Ações</th></tr></thead>
+        <tbody></tbody>
+      </table>
+
+    </div>
+
+    <!-- ESTOQUE -->
+    <div id="estoque" class="card view" style="display:none">
+      <h2>📦 Estoque</h2>
+
+      <div class="row">
+        <div class="col">
+          <label class="label">ID do produto</label>
+          <input id="p_id" type="number" class="input" placeholder="ex: 123">
+        </div>
+        <div class="col">
+          <label class="label">Nome do produto</label>
+          <input id="p_name" class="input" placeholder="ex: Camiseta Azul">
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:8px">
+        <div class="col">
+          <label class="label">Quantidade inicial</label>
+          <input id="p_qty" type="number" class="input" placeholder="ex: 1500">
+        </div>
+        <div class="col">
+          <label class="label">Ações</label>
+          <div style="display:flex;gap:8px">
+            <button class="btn" onclick="addOrUpdateProduct()">Salvar Produto</button>
+            <button class="btn ghost" onclick="clearProductForm()">Limpar</button>
+          </div>
+        </div>
+      </div>
+
+      <hr style="margin:12px 0;border:none;border-top:1px solid #f1f4fb">
+
+      <h2 style="margin-top:8px">📚 Produtos cadastrados</h2>
+      <table class="table" id="products_table">
+        <thead><tr><th>ID</th><th>Nome</th><th>Qtd</th><th>Ações</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <div class="footer">projeto desafio</div>
+</div>
+
+<script>
+/* STORAGE KEYS */
+const KEY_ORDERS = 'mm_orders_v2';
+const KEY_PRODUCTS = 'mm_products_v2';
+
+/* UTIL */
+function loadOrders(){ try{ return JSON.parse(localStorage.getItem(KEY_ORDERS) || '[]') }catch(e){return[]} }
+function saveOrders(list){ localStorage.setItem(KEY_ORDERS, JSON.stringify(list)) }
+function loadProducts(){ try{ return JSON.parse(localStorage.getItem(KEY_PRODUCTS) || '[]') }catch(e){return[]} }
+function saveProducts(list){ localStorage.setItem(KEY_PRODUCTS, JSON.stringify(list)) }
+
+function formatDMY(date){ // Date object -> dd/mm/yyyy
+  const d = date.getDate().toString().padStart(2,'0');
+  const m = (date.getMonth()+1).toString().padStart(2,'0');
+  const y = date.getFullYear();
+  return `${d}/${m}/${y}`;
+}
+function parseDMY(s){ // 'dd/mm/yyyy' -> Date
+  if(!s) return new Date();
+  const parts = s.split('/');
+  if(parts.length!==3) return new Date();
+  return new Date(Number(parts[2]), Number(parts[1])-1, Number(parts[0]));
+}
+function todayStr(){ return formatDMY(new Date()) }
+function chunkArrayBySize(total, chunkSize=1000){
+  const out=[];
+  let left=total;
+  while(left>0){
+    const take = left>=chunkSize ? chunkSize : left;
+    out.push(take);
+    left -= take;
+  }
+  return out;
+}
+
+/* UI: tabs */
+const tabs = document.querySelectorAll('.tab');
+tabs.forEach(t=>t.addEventListener('click', ()=> {
+  tabs.forEach(x=>x.classList.remove('active'));
+  t.classList.add('active');
+  const target = t.dataset.tab;
+  document.querySelectorAll('.view').forEach(v=> v.style.display = (v.id===target ? '' : 'none'));
+  // refresh view when switching
+  renderAll();
+}));
+
+/* PRODUCTS (estoque) */
+function addOrUpdateProduct(){
+  const id = Number(document.getElementById('p_id').value);
+  const name = document.getElementById('p_name').value.trim();
+  const qty = Number(document.getElementById('p_qty').value);
+  if(!id || !name || isNaN(qty)){ alert('preencha id, nome e quantidade'); return; }
+  let prods = loadProducts();
+  const existing = prods.find(p=>p.id===id);
+  if(existing){
+    existing.name = name; existing.qty = qty;
+  } else {
+    prods.push({id, name, qty});
+  }
+  saveProducts(prods);
+  clearProductForm();
+  renderProducts();
+}
+
+function clearProductForm(){
+  document.getElementById('p_id').value=''; document.getElementById('p_name').value=''; document.getElementById('p_qty').value='';
+}
+
+function renderProducts(){
+  const tbody = document.querySelector('#products_table tbody');
+  tbody.innerHTML = '';
+  const prods = loadProducts();
+  prods.forEach(p=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${p.id}</td><td>${p.name}</td><td>${p.qty}</td>
+      <td>
+        <button class="small" onclick="editProduct(${p.id})">editar</button>
+        <button class="small" onclick="deleteProduct(${p.id})">deletar</button>
+      </td>`;
+    tbody.appendChild(tr);
+  });
+}
+function editProduct(id){
+  const prods = loadProducts(); const p = prods.find(x=>x.id===id);
+  if(!p) return alert('produto não encontrado');
+  document.getElementById('p_id').value = p.id;
+  document.getElementById('p_name').value = p.name;
+  document.getElementById('p_qty').value = p.qty;
+}
+function deleteProduct(id){
+  if(!confirm('deletar produto?')) return;
+  let prods = loadProducts(); prods = prods.filter(p=>p.id!==id); saveProducts(prods); renderProducts();
+}
+
+/* ORDERS (pedidos) */
+
+// Build future schedule weekly chunks (max chunkSize)
+function buildFuture(remaining, orderDateStr, chunkSize=1000){
+  const chunks = chunkArrayBySize(remaining, chunkSize);
+  const base = parseDMY(orderDateStr || todayStr());
+  return chunks.map((qty,i)=>{
+    const d = new Date(base.getTime()); d.setDate(d.getDate() + 7*(i+1));
+    return {date: formatDMY(d), qty, delivered:false, delivered_at:null};
+  });
+}
+
+// Register order using real stock
+function registerOrderObj(order_code, product_id, requested_qty, order_date){
+  const products = loadProducts();
+  const prod = products.find(p=>p.id === Number(product_id));
+  let available = prod ? prod.qty : 0;
+  const immediate = Math.min(available, requested_qty);
+  const remaining = Math.max(0, requested_qty - immediate);
+  // update stock by immediate
+  if(prod){
+    prod.qty = prod.qty - immediate;
+    saveProducts(products);
+  }
+  const future = buildFuture(remaining, order_date || todayStr(), 1000);
+  const order = {
+    order_code: String(order_code),
+    product_id: Number(product_id),
+    requested_qty: Number(requested_qty),
+    immediate: Number(immediate),
+    order_date: order_date || todayStr(),
+    future // array of {date,qty,delivered,delivered_at}
+  };
+  // save (replace if code exists)
+  let list = loadOrders();
+  const idx = list.findIndex(o=>o.order_code === order.order_code);
+  if(idx>=0) list[idx] = order; else list.unshift(order);
+  saveOrders(list);
+  renderAll();
+  return order;
+}
+
+/* UI actions */
+function uiRegister(){
+  const code = document.getElementById('r_code').value.trim();
+  const prod = Number(document.getElementById('r_prod').value);
+  const qty = Number(document.getElementById('r_qty').value);
+  const date = document.getElementById('r_date').value.trim();
+  if(!code || !prod || !qty || !date){ alert('preencha todos os campos (código, produto, qtd, data dd/mm/yyyy)'); return; }
+  registerOrderObj(code, prod, qty, date);
+  // clear inputs
+  document.getElementById('r_code').value=''; document.getElementById('r_prod').value=''; document.getElementById('r_qty').value=''; document.getElementById('r_date').value='';
+  alert('pedido registrado ✅');
+}
+
+function uiFillExample(){
+  document.getElementById('r_code').value='122445';
+  document.getElementById('r_prod').value='123';
+  document.getElementById('r_qty').value='5000';
+  document.getElementById('r_date').value='07/10/2025';
+}
+
+function uiLoadOrder(){
+  const code = document.getElementById('search_code').value.trim();
+  if(!code){ alert('digita o código do pedido'); return; }
+  const order = loadOrders().find(o=>o.order_code===code);
+  renderOrderPanel(order);
+}
+function uiClearSearch(){ document.getElementById('search_code').value=''; document.getElementById('order_panel').innerHTML=''; }
+
+function renderOrderPanel(order){
+  const panel = document.getElementById('order_panel');
+  if(!order){ panel.innerHTML = `<div class="muted">Pedido não encontrado</div>`; return; }
+  const pendingTotal = order.future.filter(f=>!f.delivered).reduce((s,it)=>s+it.qty,0);
+  let html = `<div style="display:flex;gap:8px;align-items:center"><div class="pill">Pedido: <b>${order.order_code}</b></div><div class="muted">Produto: <b>${order.product_id}</b></div></div>
+    <div style="margin-top:8px" class="muted">Qtd solicitada: <b>${order.requested_qty}</b> — Entrega imediata: <b>${order.immediate}</b> — Pendentes: <b>${pendingTotal}</b></div>
+    <hr style="margin:10px 0;border:none;border-top:1px solid #f1f4fb">
+    <div><b>Entregas futuras</b></div>`;
+  order.future.forEach((f,ix)=>{
+    const btn = f.delivered ? `<span class="muted">✅ entregue (${f.delivered_at||''})</span>` : `<button class="ok" onclick="markDelivered('${order.order_code}',${ix})">ok</button>`;
+    html += `<div class="delivery-row"><div><b>${f.qty}</b> — <span class="muted">${f.date}</span></div><div>${btn}</div></div>`;
+  });
+  panel.innerHTML = html;
+}
+
+function markDelivered(orderCode, idx){
+  let list = loadOrders();
+  const i = list.findIndex(o=>o.order_code===orderCode);
+  if(i===-1){ alert('pedido não encontrado'); return; }
+  const f = list[i].future[idx];
+  if(!f || f.delivered){ alert('já entregue ou inválido'); return; }
+  f.delivered = true; f.delivered_at = todayStr();
+  saveOrders(list);
+  renderAll();
+}
+
+/* Render tables */
+function renderOrdersTable(){
+  const tbody = document.querySelector('#orders_table tbody'); tbody.innerHTML='';
+  const orders = loadOrders();
+  orders.forEach(o=>{
+    const pending = o.future.filter(f=>!f.delivered).reduce((s,it)=>s+it.qty,0);
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${o.order_code}</td><td>${o.product_id}</td><td>${o.requested_qty}</td><td>${o.immediate}</td><td>${pending}</td>
+      <td>
+        <button class="small" onclick="renderOrderPanel(loadOrders().find(x=>x.order_code==='${o.order_code}'))">ver</button>
+        <button class="small" onclick="gotoTabAndShow('registrar','${o.order_code}')">ir</button>
+        <button class="small" onclick="deleteOrder('${o.order_code}')">deletar</button>
+      </td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+function renderRegistrarTable(){
+  const tbody = document.querySelector('#registrar_table tbody'); tbody.innerHTML='';
+  const orders = loadOrders();
+  orders.forEach(o=>{
+    const pending = o.future.filter(f=>!f.delivered).reduce((s,it)=>s+it.qty,0);
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${o.order_code}</td><td>${o.product_id}</td><td>${o.requested_qty}</td><td>${o.immediate}</td><td>${pending}</td>
+      <td><button class="small" onclick="gotoTabAndShow('pedidos','${o.order_code}')">ver</button></td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+function deleteOrder(code){
+  if(!confirm('deletar pedido?')) return;
+  let list = loadOrders(); list = list.filter(o=>o.order_code!==code); saveOrders(list); renderAll();
+}
+
+function renderAll(){
+  renderProducts();
+  renderOrdersTable();
+  renderRegistrarTable();
+  // if searching currently, re-render panel
+  const sc = document.getElementById('search_code').value.trim();
+  if(sc) {
+    const o = loadOrders().find(x=>x.order_code===sc);
+    if(o) renderOrderPanel(o);
+  }
+}
+
+function gotoTabAndShow(tab, code){
+  // activate tab
+  tabs.forEach(x=>x.classList.remove('active'));
+  document.querySelector(`.tab[data-tab="${tab}"]`).classList.add('active');
+  document.querySelectorAll('.view').forEach(v=> v.style.display = (v.id===tab ? '' : 'none'));
+  // show order
+  document.getElementById('search_code').value = code;
+  renderOrderPanel(loadOrders().find(x=>x.order_code===code));
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* init sample if empty */
+(function init(){
+  if(!localStorage.getItem(KEY_PRODUCTS)){
+    // sample product so immediate test works
+    saveProducts([{id:123,name:'Produto 123',qty:1500}]);
+  }
+  if(!localStorage.getItem(KEY_ORDERS)){
+    saveOrders([]);
+  }
+  renderAll();
+})();
+</script>
+</body>
+</html>
