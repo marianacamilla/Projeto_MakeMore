@@ -16,4 +16,5 @@ Será necessário o download da pasta "api_ERP" no dispositivo utilizado, e segu
 http://127.0.0.1:5000/
 
 Pronto, irá aparecer a página inicial do modelo, onde pode ser realizados testes com consultas, vendas e inserção de produtos no estoque!
+
 <img width="620" height="913" alt="image" src="https://github.com/user-attachments/assets/4ed7f70e-c3c4-4b86-8647-bbf478475102" />
