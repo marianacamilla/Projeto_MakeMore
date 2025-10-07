@@ -17,4 +17,5 @@ http://127.0.0.1:5000/
 
 Pronto, irá aparecer a página inicial do modelo, onde pode ser realizados testes com consultas, vendas e inserção de produtos no estoque!
 
-<img width="620" height="913" alt="image" src="https://github.com/user-attachments/assets/4ed7f70e-c3c4-4b86-8647-bbf478475102" />
+<img width="1473" height="510" alt="image" src="https://github.com/user-attachments/assets/1a4345b4-9cc4-48a9-9cc7-bd10d2386c08" />
+
